@@ -1,0 +1,18 @@
+<form method="GET" name="pagination">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a class="pagination-arrow" href="?page=1">&lt;&lt;</a>
+            <a class="pagination-arrow" href="?page={{ page_obj.previous_page_number }}">&lt;&nbsp;</a>
+        {% endif %}
+
+        <span class="current">
+            <input name="page" type="number" value="{{ page_obj.number }}" onkeypress="enterPage(event)"
+                   class="page-number-input"> / {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+            <a class="pagination-arrow" href="?page={{ page_obj.next_page_number }}">&nbsp;&gt;</a>
+            <a class="pagination-arrow" href="?page={{ page_obj.paginator.num_pages }}">&gt;&gt;</a>
+        {% endif %}
+    </span>
+</form>

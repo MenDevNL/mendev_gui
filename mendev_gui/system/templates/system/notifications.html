@@ -1,0 +1,151 @@
+{% extends "ttti_gui/base.html" %}
+{% load static %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+{% block content %}
+<script>
+    function enterPage(event) {
+        var key = event.which || event.keyCode;
+        var form = event.currentTarget.form;
+        if (key == 13) {
+            form.submit();
+        }
+    }
+</script>
+<script>
+    window.addEventListener("load", send_shown)
+    function send_shown() {
+        var host_url = window.location.origin
+        notifications = document.getElementsByName("notif-row")
+        for (notification of notifications) {
+            var shown_datetime = notification.getAttribute("shown_datetime")
+            if (shown_datetime == "None") {
+                user_notification_id = notification.getAttribute('user_notification_id')
+                fetch(host_url + "/notifications/shown/" + user_notification_id + "/")
+                .then((response) => {
+                    if (!response.ok) {
+                        alert("Error setting notification shown.");
+                    }
+                })
+            }
+        }
+    }
+    function send_archive(el, user_notification_id) {
+        var host_url = window.location.origin
+        fetch(host_url + "/notifications/archive/" + user_notification_id + "/")
+        .then((response) => {
+            if (!response.ok) {
+              alert("Error hiding notification.");
+            }
+            else {
+                var to_hide = el.parentNode
+                if (to_hide.tagName == "TD") {
+                    to_hide = to_hide.parentNode;
+                }
+              to_hide.style.display='none';
+            }
+        })
+    }
+    function archive_all() {
+        var from_datetime = document.getElementById("from_datetime").value
+        var to_datetime = document.getElementById("to_datetime").value
+        var host_url = window.location.origin
+        fetch(host_url + "/notifications/archive_all/" + from_datetime + "/" + to_datetime + "/")
+        .then((response) => {
+            if (!response.ok) {
+              alert("Error archiving notifications.");
+            }
+            else {
+                location.reload();
+            }
+        })
+    }
+    function unarchive_all() {
+        var from_datetime = document.getElementById("from_datetime").value
+        var to_datetime = document.getElementById("to_datetime").value
+        var host_url = window.location.origin
+        fetch(host_url + "/notifications/unarchive_all/" + from_datetime + "/" + to_datetime + "/")
+        .then((response) => {
+            if (!response.ok) {
+              alert("Error retrieving archived notifications.");
+            }
+            else {
+                location.reload();
+            }
+        })
+    }
+
+</script>
+
+<h2>{% trans title %}</h2>
+<form method="POST" name="list">
+{% csrf_token %}
+    <div class="float-left mr-3">
+        {% trans 'From' %}:
+        <input id="from_datetime" type="datetime-local" name="from_datetime" step="1"
+               value="{{ from_datetime|date:'Y-m-d' }}T{{ from_datetime|time:'H:i:s' }}">
+    </div>
+    <div class="float-left mr-3">
+        {% trans 'To' %}:
+        <input id="to_datetime" type="datetime-local" name="to_datetime" step="1"
+               value="{{ to_datetime|date:'Y-m-d' }}T{{ to_datetime|time:'H:i:s' }}">
+    </div>
+    <div class="float-left mr-3">
+        <button class="btn-primary" type="submit" name="select" value="select">{% trans 'Select' %}</button>
+    </div>
+    <div class="float-left mr-3">
+        <button class="btn-primary archive_all" type="button" name="select" title="{% trans 'Archive all' %}"
+                value="select" onclick="archive_all()"></button>
+    </div>
+    <div class="float-left mr-3">
+        <button class="btn-primary unarchive_all" type="button" name="select" title="{% trans 'Retrieve archived' %}"
+                value="select" onclick="unarchive_all()"></button>
+    </div>
+    <div class="small ml-5" style="clear:left;">({% trans 'Unshown notifications created before the selected period are shown once' %})</div>
+    <table class="table table-sm">
+        <tr>
+            <th></th>
+            <th scope="col" class="created_dt_col">
+                <button class="order_by" type="submit" name="order_by" value="created_dt">
+                    {% trans 'Created' %}
+                </button>
+            </th>
+            <th scope="col" class="notification_from_col">{% trans 'From' %}</th>
+            <th scope="col" class="subject_col">
+                <button class="order_by" type="submit" name="order_by" value="notification__subject">
+                    {% trans 'Subject' %}
+                </button>
+            </th>
+        </tr>
+    {% for user_notification in page_obj %}
+        <tr context-info="{{ user_notification.record_info }}" name="notif-row" user_notification_id="{{ user_notification.id }}"
+            shown_datetime="{{ user_notification.shown_datetime }}">
+            <td onclick="send_archive(this, {{ user_notification.id }})">
+              <div class="archive-icon"  title="{% trans 'Archive' %}"
+                   onclick="send_archive(this, {{ user_notification.id }})">
+              </div>
+            </td>
+            <td>{{ user_notification.created_dt|date:'d-m-Y H:i:s' }}</td>
+            <td>
+                {% if user_notification.notification.task %}
+                <a class="underline"
+                    href="{% url 'ttti:task' user_notification.notification.task.id %}">
+                    {{ user_notification.notification.task.name }} ({{ user_notification.notification.task.id }})
+                </a>
+                {% else %}
+                    {{ user_notification.created_by }}
+                {% endif %}
+            </td>
+            <td class="subject" style="font-weight: {% if user_notification.shown_datetime %}normal{% else %}bold{% endif %}">
+                <a class="underline" href="{% url 'ttti:notification' user_notification.notification.id %}">
+                    {{ user_notification.notification.subject }}
+                </a>
+            </td>
+        </tr>
+    {% endfor %}
+    </table>
+</form>
+<div class="pagination">
+    {% include "ttti_gui/pagination.html" %}
+</div>
+{% endblock content %}

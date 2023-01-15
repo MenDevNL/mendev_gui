@@ -1,0 +1,61 @@
+{% extends "ttti_gui/base.html" %}
+{% load i18n %}
+{% load humanize %}
+{% get_current_language as LANGUAGE_CODE %}
+{% block content %}
+<h2>{{ title }}</h2>
+<div class="form-table">
+    <div class="form-row">
+        <label class="form-element">Application version:</label><div class="form-element">{{ version }}</div>
+    </div>
+    <div class="form-row">
+        <label class="form-element">Application server:</label><div class="form-element">{{ application_server }}</div>
+    </div>
+    <div class="form-row">
+        <label class="form-element">MenDev DB server:</label><div class="form-element">{{ ttti_server }}</div>
+    </div>
+</div>
+<h3 class="mt-3">{% trans 'Subsystems' %}</h3>
+{% for subsystem in subsystems %}
+<h5 class="mt-3">{% trans subsystem.name %}</h5>
+<div class="form-table">
+    <div class="form-row">
+        <label class="form-element">Status:</label><div title="{{ subsystem.error }}"
+                                                        class="form-element">{{ subsystem.status }}</div>
+    </div>
+    {% if subsystem.active %}
+        <div class="form-row">
+            <label class="form-element">Version:</label><div class="form-element">{{ subsystem.engine_version }}</div>
+        </div>
+        <div class="form-row">
+            <label class="form-element">MenDev DB server:</label><div class="form-element">{{ subsystem.mendev.server }}</div>
+        </div>
+        <div class="form-row">
+            <label class="form-element">MenDev database:</label><div class="form-element">{{ subsystem.mendev.database }}</div>
+        </div>
+        <div class="form-row">
+            <label class="form-element">Active tasks:</label><div class="form-element">{{ subsystem.active_tasks_count }}</div>
+        </div>
+        <div class="form-row">
+            <label class="form-element">CPU Usage:</label>
+            <div class="form-element">
+                {% for cpu_percentage in subsystem.cpu_percentages %}
+                    {{ cpu_percentage }}%&nbsp;&nbsp;
+                {% endfor %}
+            </div>
+        </div>
+        <div class="form-row">
+            <label class="form-element">Memory Usage:</label><div class="form-element">
+            {{ subsystem.memory_used|intcomma }}/{{ subsystem.memory_total|intcomma }} MB&nbsp;&nbsp;({{ subsystem.memory_percentage }}%)</div>
+        </div>
+        <div class="form-row">
+            <label class="form-element">Swap Memory:</label><div class="form-element">
+            {{ subsystem.swap_memory_used|intcomma }}/{{ subsystem.swap_memory_total|intcomma }} MB&nbsp;&nbsp;
+            ({{ subsystem.swap_memory_percentage }}%)</div>
+        </div>
+    {% endif %}
+</div>
+
+{% endfor %}
+
+{% endblock content %}

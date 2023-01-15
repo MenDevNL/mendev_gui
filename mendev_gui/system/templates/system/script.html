@@ -1,0 +1,61 @@
+{% extends "ttti_gui/base.html" %}
+{% load static %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+{% block content %}
+<script>
+    function confirm(el, subject, content) {
+        document.getElementById("confirmed").value = el.value;
+        document.getElementById("confirm-subject").innerHTML = subject;
+        document.getElementById("confirm-content").innerHTML = content;
+        document.getElementById("confirm-modal").style.display = "block";
+        var confirm = document.getElementById("confirm-confirm");
+        confirm.onclick = function() {
+          el.form.submit()
+        }
+        var cancel = document.getElementById("confirm-cancel");
+        cancel.onclick = function() {
+          document.getElementById("confirmed").value = "";
+          document.getElementById("confirm-modal").style.display = "none";
+        }
+    }
+</script>
+
+<h2>{% trans title %}</h2>
+<form method="POST">
+{% csrf_token %}
+<div class="form-table">
+    <div class="form-row">
+        <div class="form-element">
+            <div class="form-table">
+                <div class="form-row">
+                    <label class="form-element-input font-weight-bold" style="vertical-align: top;">{% trans 'Script'%}:</label>
+                    <div class="form-element-input">
+                        <textarea class="script" name="script" style="resize:both;"
+                            >{{ script }}</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% if perms.ttti.add_task and user.is_verified %}
+    <input id="confirmed" type="hidden" name="confirmed" value="">
+    <button class="mt-2 btn btn-primary" value="execute" type="button" name="submit_button"
+            onclick="confirm(this, '{% trans 'Are you sure?' %}',
+            '{% trans 'Click Confirm to execute the script' %}')"
+        >{% trans 'Execute' %}</button>
+{% endif %}
+</form>
+<div>{% trans 'Result:' %}</div>
+<div>{{ result|default_if_none:"" }}</div>
+<div id="confirm-modal" class="confirm-modal">
+  <div class="confirm-modal-content">
+    <h3 id="confirm-subject"></h3>
+    <p id="confirm-content"></p>
+    <button type="button" id="confirm-confirm" class="btn btn-sm btn-primary">{% trans 'Confirm' %}</button>
+    <button type="button" id="confirm-cancel" class="btn btn-sm btn-primary">{% trans 'Cancel' %}</button>
+  </div>
+</div>
+<script src="{% static 'js/custom-select.js' %}"></script>
+{% endblock content %}

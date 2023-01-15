@@ -1,0 +1,104 @@
+{% extends "mendev_gui/base.html" %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+{% block content %}
+<script>
+    function enterPage(event) {
+        var key = event.which || event.keyCode;
+        var form = event.currentTarget.form;
+        if (key == 13) {
+            form.submit();
+        }
+    }
+</script>
+
+<h2>{% trans title %}</h2>
+<form method="POST" name="list">
+{% csrf_token %}
+    <div class="float-start me-3 mb-3">
+        {% trans 'From' %}:
+        <input type="datetime-local" name="from_datetime" step="1"
+               value="{{ from_datetime|date:'Y-m-d' }}T{{ from_datetime|time:'H:i:s' }}">
+    </div>
+    <div class="float-start me-3 mb-3">
+        {% trans 'To' %}:
+        <input type="datetime-local" name="to_datetime" step="1"
+               value="{{ to_datetime|date:'Y-m-d' }}T{{ to_datetime|time:'H:i:s' }}">
+    </div>
+    <div class="float-start me-3 mb-3">
+        <button class="btn-primary" type="submit" name="select" value="select">{% trans 'Select' %}</button>
+    </div>
+    <table class="table table-sm">
+        <tr>
+            <th scope="col" class="task_id_col">
+                <button class="order_by" type="submit" name="order_by" value="id">
+                    {% trans 'ID' %}
+                </button>
+            </th>
+            <th scope="col" class="task_type_col">
+                <button class="order_by" type="submit" name="order_by" value="task_type__name">
+                    {% trans 'Task Type' %}
+                </button>
+            </th>
+            <th scope="col" class="started_dt_col">
+                <button class="order_by" type="submit" name="order_by" value="datetime_started">
+                    {% trans 'Started' %}
+                </button>
+            </th>
+            <th scope="col" class="requesting_user_col">
+                <button class="order_by" type="submit" name="order_by" value="requesting_user">
+                    {% trans 'Requester' %}
+                </button>
+            </th>
+            <th scope="col" class="status_col">
+                <button class="order_by" type="submit" name="order_by" value="status">
+                    {% trans 'Status' %}
+                </button>
+            </th>
+            <th scope="col" class="logging_button_col">{% trans 'Subsystem' %}</th>
+            <th scope="col" class="logging_button_col">{% trans 'Result' %}</th>
+        </tr>
+       <tr>
+            <td></td>
+            <td>
+                <select name="task_type_filter"
+                       onchange="this.form.submit()" class="task_type_filter">
+                    <option value=""></option>
+                    {% for option in task_type_filter_options %}
+                        <option value="{{ option.id }}" {{ option.selected }}>{{ option.name }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td></td>
+            <td><input type="text" name="requesting_user_filter" value="{{ requesting_user_filter }}"
+                onkeypress="enterPage(event)" class="requesting_user_filter">
+            </td>
+            <td>
+                <select name="task_status_filter"
+                       onchange="this.form.submit()" class="task_status_filter">
+                    <option value=""></option>
+                    {% for option in status_filter_options %}
+                        <option value="{{ option.status }}" {{ option.selected }}>{{ option.status }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td></td>
+            <td></td>
+        </tr>
+    {% for task in page_obj %}
+        <tr context-info="{{ task.record_info }}">
+            <td><a title="{{ task.name }}" class="underline" href="{% url 'system:task' task.id %}">{{ task.id }}</a></td>
+            <td>{{ task.task_type.name }}</td>
+            <td>{{ task.datetime_started|date:'Y-m-d H:i:s' }}</td>
+            <td>{{ task.requesting_user }}</td>
+            <td>{{ task.status }}</td>
+            <td>{{ task.task_type.subsystem.name }}</td>
+            <td>{{ task.result|default_if_none:'' }}</td>
+        </tr>
+    {% endfor %}
+    </table>
+</form>
+<div class="pagination">
+    {% include "mendev_gui/pagination.html" %}
+</div>
+{% endblock content %}

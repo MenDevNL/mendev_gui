@@ -1,0 +1,11 @@
+{% extends "mendev_gui/base.html" %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+{% block content %}
+    <h2>{% trans 'You are logged out' %}</h2>
+    <div class="border-top pt-3">
+        <small class="text-muted">
+            <a href="{% url 'system:login' %}">{% trans 'Login again' %}</a>
+        </small>
+    </div>
+{% endblock content %}

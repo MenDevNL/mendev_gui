@@ -1,0 +1,52 @@
+{% extends "ttti_gui/base.html" %}
+{% load i18n %}
+{% load static %}
+{% get_current_language as LANGUAGE_CODE %}
+{% load crispy_forms_tags %}
+{% block content %}
+    <h2>{% trans title %}</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+            <p class="notification-subject">{{ notification.subject }}</p>
+            <div class="form-table">
+                <div class="form-row">
+                    <div class="form-element">
+                        <div class="form-table">
+                            <div class="form-row">
+                                <label class="form-element">{% trans 'From'%}:</label>
+                                <div  class="form-element">
+                                    {% if notification.task %}
+                                        <a class="underline"
+                                            href="{% url 'ttti:task' notification.task.id %}">
+                                            {{ notification.task.name }}
+                                        </a>
+                                    {% else %}
+                                        {{ notification.created_by }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <label class="form-element">{% trans 'Sent To'%}:</label>
+                                <div  class="form-element">
+                                    {% for usernotification in notification.tttiusernotification_set.all %}
+                                        {% if not forloop.first %}
+                                            ,&nbsp;
+                                        {% endif %}
+                                        {{ usernotification.user.get_username }}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <label class="form-element">{% trans 'Created'%}:</label>
+                                <div  class="form-element">{{ notification.created_dt|date:'d-m-Y H:i:s' }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="notification-content">{{ notification.content|default:''|linebreaks }}</p>
+            <br><button class="btn btn-primary archive-button" type="submit" name="archive" value="archive"></button>
+        </div>
+    </form>
+{% endblock content %}

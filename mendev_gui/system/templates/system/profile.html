@@ -1,0 +1,15 @@
+{% extends "mendev_gui/base.html" %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+{% block content %}
+    <div class="content-section">
+        <form method="POST">
+            {% csrf_token %}
+            {{ user_form }}
+            {{ profile_form }}
+            <div class="form-group">
+                <br><button class="btn btn-outline-info" type="submit">{% trans 'Save' %}</button>
+            </div>
+        </form>
+    </div>
+{% endblock content %}

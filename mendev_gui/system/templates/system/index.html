@@ -1,0 +1,23 @@
+{% extends "mendev_gui/base.html" %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+{% block content %}
+<h2>MenDev Control</h2>
+{% if user.is_authenticated %}
+<div class="pb-3">{% trans 'Hello' %} {{ user.get_full_name }}!</div>
+    {% for option in main_menu.options %}
+      <div class="pt-1"><a class = "btn btn-primary btn-sm py-0" href="{{ option.url }}?init=true">{% trans option.name %}</a></div>
+      {% for l1_option in option.options %}
+        <div  class="pt-1 ps-1"><a class="btn btn-secondary btn-sm py-0" href="{{ l1_option.url }}?init=true">{% trans l1_option.name %}</a></div>
+        {% for l2_option in l1_option.options %}
+          <div  class="pt-1 ps-2"><a class="btn btn-dark btn-sm py-0" href="{{ l2_option.url }}?init=true">{% trans l2_option.name %}</a></div>
+          {% for l3_option in l2_option.options %}
+            <div  class="pt-1 ps-3"><a class="btn btn-light btn-sm py-0" href="{{ l3_option.url }}?init=true">{% trans l3_option.name %}</a></div>
+          {% endfor %}
+        {% endfor %}
+      {% endfor %}
+    {% endfor %}
+{% else %}
+  <p>{% trans 'You are not logged in' %}</p>
+{% endif %}
+{% endblock content %}
